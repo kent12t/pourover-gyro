@@ -22,14 +22,14 @@ if (window.DeviceMotionEvent) {
         // These values might need calibration for smoother movement
 
         // Accelerometer data
-        const x = event.accelerationIncludingGravity.x;
-        const y = event.accelerationIncludingGravity.y;
-        const z = event.accelerationIncludingGravity.z;
+        x = event.accelerationIncludingGravity.x;
+        y = event.accelerationIncludingGravity.y;
+        z = event.accelerationIncludingGravity.z;
 
         // Gyroscope data
-        const alpha = event.rotationRate.alpha; // Rotation around the z-axis
-        const beta = event.rotationRate.beta;  // Rotation around the x-axis
-        const gamma = event.rotationRate.gamma; // Rotation around the y-axis
+        alpha = event.rotationRate.alpha; // Rotation around the z-axis
+        beta = event.rotationRate.beta;  // Rotation around the x-axis
+        gamma = event.rotationRate.gamma; // Rotation around the y-axis
 
         console.log(x, y, z, alpha, beta, gamma);
     });
