@@ -1,24 +1,20 @@
 // Variables to store device motion data
-let x = null;
-let y = null;
-let z = null;
-let alpha, beta, gamma;
-let bg;
+let x, y, z, alpha, beta, gamma;
 
+// Initialize an array to store the last N readings
+const windowSize = 10; // Size of the moving average window
+let xReadings = new Array(windowSize).fill(0);
+let yReadings = new Array(windowSize).fill(0);
+// Similar for z, alpha, beta, gamma
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-
 }
 
 function draw() {
-    // Map device acceleration to canvas coordinates
-    // This is a basic mapping; you might need to adjust the scaling
-    bg = color(255, 0, 0);
-
-    background(bg);
-    if (x != 0 && y != 0) {
-        bg = color(0, 255, 0);
+    background(255, 0, 0);
+    // Ensure x and y are numbers before using them
+    if (typeof x === 'number' && typeof y === 'number') {
         ellipse(map(x, -10, 10, 0, windowWidth), map(y, -10, 10, 0, windowHeight), 50, 50);
     }
 }
@@ -26,20 +22,25 @@ function draw() {
 if (window.DeviceMotionEvent) {
     window.addEventListener('devicemotion', (event) => {
         // Update global variables based on accelerationIncludingGravity
-        // These values might need calibration for smoother movement
-
-        // Accelerometer data
-        x = event.accelerationIncludingGravity.x;
-        y = event.accelerationIncludingGravity.y;
-        z = event.accelerationIncludingGravity.z;
+        let rawX = event.accelerationIncludingGravity.x;
+        let rawY = event.accelerationIncludingGravity.y;
+        // let rawZ = event.accelerationIncludingGravity.z; // Assuming you will use it later
 
         // Gyroscope data
-        alpha = event.rotationRate.alpha; // Rotation around the z-axis
-        beta = event.rotationRate.beta;  // Rotation around the x-axis
-        gamma = event.rotationRate.gamma; // Rotation around the y-axis
+        // let rawAlpha = event.rotationRate.alpha; // Assuming you will use it later
+        // let rawBeta = event.rotationRate.beta; // Assuming you will use it later
+        // let rawGamma = event.rotationRate.gamma; // Fixed typo
 
-        console.log(x, y, z, alpha, beta, gamma);
+        // Update the moving average arrays
+        x = updateMovingAverage(rawX, xReadings);
+        y = updateMovingAverage(rawY, yReadings);
     });
 } else {
     console.log("DeviceMotionEvent is not supported by your device.");
+}
+
+function updateMovingAverage(newVal, arr) {
+    arr.unshift(newVal);
+    arr.pop();
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
