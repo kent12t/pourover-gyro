@@ -15,7 +15,7 @@ function draw() {
     background(255, 0, 0);
     // Ensure x and y are numbers before using them
     if (typeof x === 'number' && typeof y === 'number') {
-        ellipse(map(x, -10, 10, windowWidth, 0), map(y, -10, 10, 0, windowHeight), 50, 50);
+        ellipse(map(x, 10, -10, 0, windowWidth), map(y, -10, 10, 0, windowHeight), 50, 50);
     }
 }
 
