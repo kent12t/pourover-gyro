@@ -15,7 +15,7 @@ function draw() {
     background(255, 0, 0);
     // Ensure x and y are numbers before using them
     if (typeof x === 'number' && typeof y === 'number') {
-        ellipse(-map(x, -10, 10, 0, windowWidth), map(y, -10, 10, 0, windowHeight), 50, 50);
+        ellipse(map(x, -10, 10, 0, windowWidth), map(y, -10, 10, 0, windowHeight), 50, 50);
     }
 }
 
@@ -32,7 +32,7 @@ if (window.DeviceMotionEvent) {
         // let rawGamma = event.rotationRate.gamma; // Fixed typo
 
         // Update the moving average arrays
-        x = updateMovingAverage(rawX, xReadings);
+        x = -updateMovingAverage(rawX, xReadings);
         y = updateMovingAverage(rawY, yReadings);
     });
 } else {
