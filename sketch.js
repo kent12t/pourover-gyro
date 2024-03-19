@@ -29,8 +29,10 @@ if (window.DeviceMotionEvent) {
         lastUpdateTime = now;
 
         // Get smoothed acceleration
-        const accelX = kfX.filter(event.accelerationIncludingGravity.x);
-        const accelY = kfY.filter(event.accelerationIncludingGravity.y);
+        const accelX = kfX.filter(event.acceleration.x);
+        const accelY = kfY.filter(event.acceleration.y);
+
+        console.log(accelX, accelY);
 
         // Update velocity by integrating acceleration
         velocityX += accelX * dt;
@@ -43,6 +45,8 @@ if (window.DeviceMotionEvent) {
         // Optional: Adjust position based on some constraints, e.g., canvas size
         posX = constrain(posX, 0, width);
         posY = constrain(posY, 0, height);
+
+        console.log(posX, posY);
     });
 } else {
     console.log("DeviceMotionEvent is not supported by your device.");
