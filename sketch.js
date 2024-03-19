@@ -25,28 +25,31 @@ function draw() {
 if (window.DeviceMotionEvent) {
     window.addEventListener('devicemotion', (event) => {
         const now = Date.now();
-        const dt = (now - lastUpdateTime) / 1000; // Convert milliseconds to seconds
+        const dt = (now - lastUpdateTime) / 1000; // Time in seconds
         lastUpdateTime = now;
 
-        // Get smoothed acceleration
-        const accelX = kfX.filter(event.acceleration.x);
-        const accelY = kfY.filter(event.acceleration.y);
+        // Assuming accelerationIncludingGravity is what you intend to use
+        const accelX = kfX.filter(event.accelerationIncludingGravity.x);
+        const accelY = kfY.filter(event.accelerationIncludingGravity.y);
 
-        console.log(accelX, accelY);
+        console.log('Accel:', accelX, accelY);
 
-        // Update velocity by integrating acceleration
-        velocityX += accelX * dt;
-        velocityY += accelY * dt;
+        // Implement a simple check for 'rest' state to reset velocities
+        if (Math.abs(accelX) < 0.1 && Math.abs(accelY) < 0.1) {
+            velocityX = 0;
+            velocityY = 0;
+        } else {
+            velocityX += accelX * dt;
+            velocityY += accelY * dt;
+        }
 
-        // Update position by integrating velocity
         posX += velocityX * dt;
         posY += velocityY * dt;
 
-        // Optional: Adjust position based on some constraints, e.g., canvas size
         posX = constrain(posX, 0, width);
         posY = constrain(posY, 0, height);
 
-        console.log(posX, posY);
+        console.log('Pos:', posX, posY);
     });
 } else {
     console.log("DeviceMotionEvent is not supported by your device.");
