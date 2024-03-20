@@ -1,56 +1,46 @@
-// Kalman Filters for x and y accelerations
-const kfX = new KalmanFilter();
-const kfY = new KalmanFilter();
+// Variables to store device motion data
+let x, y, z, alpha, beta, gamma;
 
-let velocityX = 0;
-let velocityY = 0;
-let posX = 0;
-let posY = 0;
-
-let lastUpdateTime = Date.now();
+// Initialize an array to store the last N readings
+const windowSize = 10; // Size of the moving average window
+let xReadings = new Array(windowSize).fill(0);
+let yReadings = new Array(windowSize).fill(0);
+// Similar for z, alpha, beta, gamma
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    // Assuming the starting position is the center of the canvas
-    posX = width / 2;
-    posY = height / 2;
 }
 
 function draw() {
-    background(255);
-    // Visualize the estimated position
-    ellipse(posX, posY, 50, 50);
+    background(255, 0, 0);
+    // Ensure x and y are numbers before using them
+    if (typeof x === 'number' && typeof y === 'number') {
+        ellipse(map(x, -10, 10, 0, windowWidth), map(y, -10, 10, 0, windowHeight), 50, 50);
+    }
 }
 
 if (window.DeviceMotionEvent) {
     window.addEventListener('devicemotion', (event) => {
-        const now = Date.now();
-        const dt = (now - lastUpdateTime) / 1000; // Time in seconds
-        lastUpdateTime = now;
+        // Update global variables based on accelerationIncludingGravity
+        let rawX = event.accelerationIncludingGravity.x;
+        let rawY = event.accelerationIncludingGravity.y;
+        // let rawZ = event.accelerationIncludingGravity.z; // Assuming you will use it later
 
-        // Assuming accelerationIncludingGravity is what you intend to use
-        const accelX = kfX.filter(event.accelerationIncludingGravity.x);
-        const accelY = kfY.filter(event.accelerationIncludingGravity.y);
+        // Gyroscope data
+        // let rawAlpha = event.rotationRate.alpha; // Assuming you will use it later
+        // let rawBeta = event.rotationRate.beta; // Assuming you will use it later
+        // let rawGamma = event.rotationRate.gamma; // Fixed typo
 
-        console.log('Accel:', accelX, accelY);
-
-        // Implement a simple check for 'rest' state to reset velocities
-        if (Math.abs(accelX) < 0.1 && Math.abs(accelY) < 0.1) {
-            velocityX = 0;
-            velocityY = 0;
-        } else {
-            velocityX += accelX * dt;
-            velocityY += accelY * dt;
-        }
-
-        posX += velocityX * dt;
-        posY += velocityY * dt;
-
-        posX = constrain(posX, 0, width);
-        posY = constrain(posY, 0, height);
-
-        console.log('Pos:', posX, posY);
+        // Update the moving average arrays
+        x = -updateMovingAverage(rawX, xReadings);
+        y = updateMovingAverage(rawY, yReadings);
     });
 } else {
     console.log("DeviceMotionEvent is not supported by your device.");
+}
+
+function updateMovingAverage(newVal, arr) {
+    arr.unshift(newVal);
+    arr.pop();
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
