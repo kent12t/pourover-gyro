@@ -1,28 +1,28 @@
-const conn = new WebSocket('ws://192.168.116.39:80');
+window.onload = function () {
+    if (!!window.EventSource) {
+        var source = new EventSource('http://192.168.116.39:80/events'); // Add withCredentials if using HTTP auth
 
-conn.binaryType = 'arraybuffer'; // Set binary data type to ArrayBuffer
+        source.addEventListener('open', function (e) {
+            console.log("Events Connected");
+        }, false);
 
-conn.onopen = function () {
-    console.log("Connected to the server.");
-    document.getElementById('status').innerText = "Connected";
-};
+        source.addEventListener('error', function (e) {
+            if (e.target.readyState != EventSource.OPEN) {
+                console.error("Events Disconnected");
+            }
+        }, false);
 
-conn.onerror = function (error) {
-    console.error('WebSocket Error ', error);
-    document.getElementById('status').innerText = "Connection Error";
-};
+        source.addEventListener('message', function (e) {
+            console.warn("========= message", e.data, "=========");
+        }, false);
 
-conn.onmessage = function (e) {
-    var buffer = e.data;
-    var view = new DataView(buffer);
-    var floats = [];
-    for (var i = 0; i < buffer.byteLength; i += 4) {
-        floats.push(view.getFloat32(i, true)); // Assumes little-endian
+        source.addEventListener('imu_data', function (e) {  // Listening for 'imu_data'
+            var data = e.data;
+            var arr = data.split(',');
+
+            // imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading }
+
+            console.log(arr);
+        }, false);
     }
-    console.log(floats);
-};
-
-conn.onclose = function () {
-    console.log('WebSocket connection closed', event.reason, event.code);
-    document.getElementById('status').innerText = "Disconnected";
 };

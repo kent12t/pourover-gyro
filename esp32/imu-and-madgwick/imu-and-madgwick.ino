@@ -1,27 +1,36 @@
 // Include this to enable the M5 global instance.
-#include <M5Unified.h>
+// get via arduino lib
+#include <M5Unified.h>  // by m5stack
+
 // madgwick lib
-#include <MadgwickAHRS.h>
+// updated in the esp32 directory
+#include <MadgwickAHRS.h>  // adapted from arduino
 
 #include <cstring>
 #include <float.h>
 
+// esp32 connectivity
 #include <WiFi.h>
+// get via arduino lib
+#include <ESPAsyncWebServer.h>  // by lacamera
+#include <AsyncTCP.h>           // dependency from above lib
+
+AsyncWebServer server(80);
+AsyncEventSource events("/events");  // SSE endpoint
 
 const char* ssid = "Nothing";
 const char* password = "kent1234";
-
-
-bool wifiConnected = false;
-bool serverLive = false;
-
 // 192.168.116.39
 // STA IP: 192.168.116.39, MASK: 255.255.255.0, GW: 192.168.116.106
+
+// additional state management
+bool wifiConnected = false;
+bool serverLive = false;
 
 unsigned long lastUpdateTime = 0;  // Stores the time of the last IMU update
 unsigned long currentTime = 0;     // Stores the current time at each loop
 
-// Access quaternion components
+// Access imu and quaternion components
 float q0;
 float q1;
 float q2;
@@ -219,10 +228,16 @@ void startCalibration(void) {
 }
 
 void connectToWiFi() {
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.begin(ssid, password);
-    delay(100);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.printf("WiFi Failed!\n");
+    return;
   }
+}
+
+void notFound(AsyncWebServerRequest* request) {
+  request->send(404, "text/plain", "Not found");
 }
 
 /*//////////////////
@@ -238,6 +253,25 @@ void setup(void) {
   filter.begin(sampleFreq);
 
   connectToWiFi();
+
+  // Setup EventSource onConnect
+  events.onConnect([](AsyncEventSourceClient* client) {
+    if (client->lastId()) {
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+    }
+    // Send an initial hello message on connect
+    client->send("hello!", "message", millis(), 1000);
+  });
+
+  // handle annoying CORS
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Add SSE endpoint to the server
+  server.addHandler(&events);
+  server.onNotFound(notFound);
+  server.begin();
 
   int32_t w = dsp.width();
   int32_t h = dsp.height();
@@ -335,6 +369,17 @@ void loop(void) {
 
 
     // M5_LOGV("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", (data.gyro.x, data.gyro.y, data.gyro.z, data.accel.x, data.accel.y, data.accel.z, data.mag.x, data.mag.y, data.mag.z, q0, q1, q2, q3, roll, pitch, heading));
+
+    // hold the imu data
+    float imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading };
+
+    String dataString = "";
+    for (int i = 0; i < 16; i++) {
+      dataString += String(imuData[i], 6);  // Convert float to string with 6 decimal places
+      if (i < 15) dataString += ",";        // Comma-separated values
+    }
+
+    events.send(dataString.c_str(), "imu_data", millis());
 
     ++frame_count;
   } else {
