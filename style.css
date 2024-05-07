@@ -79,23 +79,184 @@
 html,
 body {
   display: flex;
+  height: 100%;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   background: var(--light);
+  margin: 0px;
+  padding: 0px;
+  overflow-y: hidden;
+  width: 100%;
+  gap: auto;
+  align-self: stretch;
 }
-/* canvas {
-  display: block;
-} */
+
+h3 {
+  color: var(--brown);
+  text-align: center;
+  font-family: "Creato Display";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+}
+
+h4 {
+  color: var(--brown);
+  text-align: center;
+  font-family: "Creato Display";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+}
+
+h6 {
+  color: var(--brown);
+  text-align: center;
+  font-family: "Creato Display";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.bottomNavText {
+  color: var(--Lighter, #f3f0eb);
+  text-align: center;
+  font-family: "Creato Display";
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+#header {
+  display: flex;
+  padding: 0px 5%;
+  align-items: center;
+  /* gap: 10px; */
+  align-self: stretch;
+  flex-direction: row;
+  /* border: #5c4a3d solid 1px; */
+}
+
+#headerName {
+  color: var(--orange);
+  text-align: center;
+  font-family: "Binoma Trial";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -1.2px;
+  /* border: #5c4a3d solid 1px; */
+}
 
 #svgContainer svg {
-  width: 80vw;
-  height: 80vw;
+  width: 60vw;
+  height: 60vw;
   overflow: visible;
-  display: block;
+  display: flex;
+
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  /* border: #5c4a3d solid 1px; */
 }
 
 #svgContainer path {
   stroke: var(--light-orange);
   stroke-width: 10px;
+}
+
+#bodyDiv {
+  display: flex;
+  /* height: 634px; */
+  width: 90%;
+  /* padding: 0px 20px; */
+  margin: 0px 5%;
+  flex-direction: column;
+  align-items: center;
+  /* gap: 5%; */
+  flex-shrink: 0;
+  align-self: stretch;
+  /* border: #5c4a3d solid 1px; */
+}
+
+.captionedContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  /* gap: 10px; */
+  align-self: stretch;
+  /* border: #5c4a3d solid 1px; */
+  padding: 0px;
+}
+
+.detailBox03Container {
+  display: flex;
+  width: 90%;
+  /* height: 112px; */
+  padding: 5% 5%;
+  justify-content: space-around;
+  align-items: center;
+  /* border: #5c4a3d solid 1px; */
+  background-color: var(--lighter);
+  border-radius: 10px;
+}
+
+.detailBox03 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  /* border: #5c4a3d solid 1px; */
+}
+
+.detailCaption {
+  margin-top: -15px;
+}
+
+#bottomNav {
+  display: flex;
+  /* width: 390px; */
+  width: 100%;
+  padding: 5% 0%;
+  justify-content: space-around;
+  align-items: center;
+  /* border: #5c4a3d solid 1px; */
+  background-color: var(--brown);
+}
+
+#bottomNavContainer {
+  display: absolute;
+  width: 100%;
+  /* border: #5c4a3d solid 1px; */
+  bottom: 0px;
+  height: 10%;
+  /* background-color: var(--brown); */
+}
+
+.navButton {
+  display: flex;
+  width: 40px;
+  /* height: 53px; */
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  flex-shrink: 0;
+  /* border: #5c4a3d solid 1px; */
+}
+
+.navButtonIcon {
+  color: var(--light-brown);
+}
+
+#selected {
+  color: var(--light-orange);
 }
