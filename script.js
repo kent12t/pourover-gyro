@@ -1,52 +1,49 @@
+const brown = "#5c4a3d";
+const light = "#ebe5d8";
+const lightBrown = "#d2b791";
+const lightGreen = "#cdcc98";
+const lightOrange = "#f1bb74";
+const lighter = "#f3f0eb";
+const newGreen = "#c2c070";
+const orange = "#de8f54";
+
 window.onload = function () {
-    if (!!window.EventSource) {
-        var source = new EventSource('http://192.168.116.39:80/events'); // Add withCredentials if using HTTP auth
+    const container = document.getElementById('svgContainer');
+    fetch('assets/jaggedCircles/0c0u/Vector.svg')
+        .then(response => response.text())
+        .then(data => {
+            container.innerHTML = data;
+            initAnimation();
+        })
+        .catch(error => console.error('Error loading the SVG:', error));
 
-        source.addEventListener('open', function (e) {
-            console.log("Events Connected");
-        }, false);
+    function initAnimation() {
+        const svgElement = document.querySelector('#svgContainer svg');
+        const paths = svgElement.getElementsByTagName('path');
+        let step;
+        Array.from(paths).forEach(path => {
+            const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            dot.setAttribute("r", "30");
+            dot.setAttribute("fill", orange);
+            svgElement.appendChild(dot);
 
-        source.addEventListener('error', function (e) {
-            if (e.target.readyState != EventSource.OPEN) {
-                console.error("Events Disconnected");
+            const pathLength = path.getTotalLength();
+            let progress = 0;
+            step = randomSpeed(); // Adjust step size for speed control
+
+            function animateDot() {
+                requestAnimationFrame(animateDot);
+                const point = path.getPointAtLength(progress % pathLength);
+                dot.setAttribute('cx', point.x);
+                dot.setAttribute('cy', point.y);
+                progress += step;
             }
-        }, false);
 
-        source.addEventListener('message', function (e) {
-            console.info("========= message", e.data, "=========");
-        }, false);
+            animateDot();
+        });
+    }
 
-        source.addEventListener('imu_data', function (e) {  // Listening for 'imu_data'
-            // Parse the JSON data received from the server
-            var data = e.data;
-            // var data = JSON.parse(e.data);
-
-            // imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading }
-
-
-            // data is expected to be an array of objects
-            // data.forEach(function (entry) {
-            //     console.log("Timestamp: " + entry.timestamp);
-            //     console.log("Accelerometer X: " + entry.ax);
-            //     console.log("Accelerometer Y: " + entry.ay);
-            //     console.log("Accelerometer Z: " + entry.az);
-            //     console.log("Gyroscope X: " + entry.gx);
-            //     console.log("Gyroscope Y: " + entry.gy);
-            //     console.log("Gyroscope Z: " + entry.gz);
-            //     console.log("Magnetometer X: " + entry.mx);
-            //     console.log("Magnetometer Y: " + entry.my);
-            //     console.log("Magnetometer Z: " + entry.mz);
-            //     console.log("Quaternion q0: " + entry.q0);
-            //     console.log("Quaternion q1: " + entry.q1);
-            //     console.log("Quaternion q2: " + entry.q2);
-            //     console.log("Quaternion q3: " + entry.q3);
-            //     console.log("Roll: " + entry.roll);
-            //     console.log("Pitch: " + entry.pitch);
-            //     console.log("Heading: " + entry.heading);
-            // });
-
-
-            console.log(data);
-        }, false);
+    function randomSpeed() {
+        return Math.random() * 2 + 2;
     }
 };
