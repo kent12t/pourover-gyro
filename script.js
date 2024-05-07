@@ -12,9 +12,23 @@ let currentSVGIndex = 0;
 const svgFolders = ['assets/jaggedCircles/0c0u', 'assets/jaggedCircles/0c1u', 'assets/jaggedCircles/1c0u', 'assets/jaggedCircles/1c1u', 'assets/jaggedCircles/1c2u'];
 
 const container = document.getElementById('svgContainer');
+const avgSpeed = document.getElementById('avgSpeed');
+const avgPitch = document.getElementById('avgPitch');
+
 let svgArray = [];
 
 var imuData = [];
+
+let lastTimestamp = null;
+let velocity = 0;
+
+// Initialize arrays to store the last 100 and 1000 rxy values
+let rxyLast100 = [];
+// let rxyLast1000 = [];
+let pitchLast100 = [];
+// let pitchLast1000 = [];
+
+let velLast100 = [];
 
 window.onload = () => {
 
@@ -37,10 +51,11 @@ window.onload = () => {
 
         source.addEventListener('imu_data', function (e) {  // Listening for 'imu_data'
             // Parse the JSON data received from the server
-            var data = e.data;
-            // var data = JSON.parse(e.data);
+            // var data = e.data;
+            var data = JSON.parse(e.data);
 
             // imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading }
+            // imuData[7] = { ax, ay, az, rxy, roll, pitch, heading } 
 
             // processData(e.data);
 
@@ -65,8 +80,42 @@ window.onload = () => {
             //     console.log("Heading: " + entry.heading);
             // });
 
+            data.forEach(item => {
+                const { rxy } = item;
+                const { pitch } = item;
+                const { timestamp } = item;
 
-            console.log(data);
+                // Update moving averages and get the results
+                const rxyAvg = updateMovingAverages(rxy, rxyLast100);
+                const pitchAvg = updateMovingAverages(pitch, pitchLast100);
+
+
+                // Optionally, do something with the averages like logging or updating the UI
+                // console.log(`Average over last 100 events: ${averages.average100}`);
+                // console.log(`Average over last 1000 events: ${averages.average1000}`);
+
+                // Calculate velocity if timestamp and lastTimestamp are available
+                // if (lastTimestamp !== null) {
+                //     const deltaTime = (timestamp - lastTimestamp) / 1000; // Convert ms to seconds
+                //     velocity += rxyAvg.average100 * deltaTime; // Integrate acceleration to find velocity
+                // }
+
+                // const velAvg = updateMovingAverages(velocity, velLast100);
+
+                // Update last timestamp for next iteration
+                lastTimestamp = timestamp;
+
+                let increasedRxy = rxyAvg.average100 * 10;
+
+                avgSpeed.innerHTML = `${increasedRxy.toFixed(2)} cm/s`;
+                avgPitch.innerHTML = pitchAvg.average100.toFixed(2) + "°";
+                // avgVel.innerHTML = `${velocity.toFixed(2)} cm/s`;
+
+                // console.log(velocity);
+            });
+
+
+            console.log(data[5]);
         }, false);
     }
 
@@ -123,7 +172,7 @@ window.onload = () => {
                 const point = path.getPointAtLength(progress);
                 dot.setAttribute('cx', point.x);
                 dot.setAttribute('cy', point.y);
-                progress += 1;
+                progress += 3;
             } else {
                 loadNextSVG();
             }
@@ -138,36 +187,25 @@ function returnRandInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function processData(data) {
-    try {
-        var parsedData = JSON.parse(data);
+function updateMovingAverages(data, arr100) {
+    // Add new rxy to both arrays
+    arr100.push(data);
 
-        // Validate data consistency
-        var minLength = Infinity;
-        for (let key in parsedData) {
-            if (Array.isArray(parsedData[key])) {
-                minLength = Math.min(minLength, parsedData[key].length);
-            }
-        }
 
-        // Truncate data to the shortest array length found
-        for (let key in parsedData) {
-            if (Array.isArray(parsedData[key])) {
-                parsedData[key] = parsedData[key].slice(0, minLength);
-            }
-        }
-
-        // Update imuData
-        imuData[16] = parsedData;
-    } catch (error) {
-        console.error("Error parsing JSON data: ", error);
-        // Optional: Handle the error by trying to clean and re-parse data
-        // cleanAndRetryParse(data);
+    // Ensure rxyLast100 has at most 100 elements
+    if (arr100.length > 5) {
+        arr100.shift();  // Remove the oldest element
     }
-}
 
-// Example of a function to clean data before retrying parse
-function cleanAndRetryParse(data) {
-    var cleanedData = data.replace(/[^,\[\]{}\d.\-+eE]/g, ''); // Regex to remove unwanted characters
-    processData(cleanedData);
+    // // Ensure rxyLast1000 has at most 1000 elements
+    // if (arr1000.length > 1000) {
+    //     arr1000.shift();  // Remove the oldest element
+    // }
+
+    // Calculate moving averages
+    let average100 = arr100.reduce((acc, val) => acc + val, 0) / arr100.length;
+    // let average1000 = arr1000.reduce((acc, val) => acc + val, 0) / arr1000.length;
+
+    // Return the computed averages
+    return { average100 };
 }
