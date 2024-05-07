@@ -2,6 +2,22 @@
 // get via arduino lib
 #include <M5Unified.h> // by m5stack
 
+// get via arduino lib
+#include <ArduinoJson.h> // by benoit blanchon
+
+// Data structure for IMU data
+struct IMUData
+{
+  float ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading;
+  unsigned long timestamp;
+};
+
+const int maxDataPoints = 20; // Adjust based on expected data during interval
+IMUData dataStorage[maxDataPoints];
+int dataCount = 0;
+unsigned long lastSendTime = 0;
+const unsigned long sendInterval = 100; // Send data every 100ms
+
 // madgwick lib
 // updated in the esp32 directory
 #include <MadgwickAHRS.h> // adapted from arduino
@@ -327,8 +343,7 @@ void loop(void)
 
   currentTime = millis();
 
-  // connectToWiFi();
-
+  // check wifi
   if (WiFi.status() == WL_CONNECTED && wifiConnected == false)
   {
     wifiConnected = true;
@@ -391,20 +406,45 @@ void loop(void)
     heading = filter.getYaw();
     // M5_LOGV("r:%f  p:%f  h:%f", roll, pitch, heading);
 
-    // M5_LOGV("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", (data.gyro.x, data.gyro.y, data.gyro.z, data.accel.x, data.accel.y, data.accel.z, data.mag.x, data.mag.y, data.mag.z, q0, q1, q2, q3, roll, pitch, heading));
+    M5_LOGV("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", (data.gyro.x, data.gyro.y, data.gyro.z, data.accel.x, data.accel.y, data.accel.z, data.mag.x, data.mag.y, data.mag.z, q0, q1, q2, q3, roll, pitch, heading));
 
-    // hold the imu data
-    float imuData[16] = {ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading};
+    // // hold the imu data
+    // float imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading };
+    // char dataBuffer[256];  // Ensure this buffer is large enough for the formatted string
 
-    String dataString = "";
-    for (int i = 0; i < 16; i++)
+    // int offset = 0;
+    // for (int i = 0; i < 16; i++) {
+    //   offset += snprintf(dataBuffer + offset, sizeof(dataBuffer) - offset, "%s%.6f", (i > 0 ? "," : ""), imuData[i]);
+    //   if (offset >= sizeof(dataBuffer)) break;  // Prevent buffer overflow
+    // }
+
+    // events.send(dataBuffer, "imu_data", millis());
+
+    // bundle the data
+
+    if (dataCount < maxDataPoints)
     {
-      dataString += String(imuData[i], 6); // Convert float to string with 6 decimal places
-      if (i < 15)
-        dataString += ","; // Comma-separated values
-    }
 
-    events.send(dataString.c_str(), "imu_data", millis());
+      IMUData &data = dataStorage[dataCount++];
+      data.timestamp = currentTime;
+      // Populate data fields here
+      data.ax = roundf(ax * 1000) / 1000.0;
+      data.ay = roundf(ay * 1000) / 1000.0;
+      data.az = roundf(az * 1000) / 1000.0;
+      data.gx = roundf(gx * 1000) / 1000.0;
+      data.gy = roundf(gy * 1000) / 1000.0;
+      data.gz = roundf(gz * 1000) / 1000.0;
+      data.mx = roundf(mx * 1000) / 1000.0;
+      data.my = roundf(my * 1000) / 1000.0;
+      data.mz = roundf(mz * 1000) / 1000.0;
+      data.q0 = roundf(q0 * 1000) / 1000.0;
+      data.q1 = roundf(q1 * 1000) / 1000.0;
+      data.q2 = roundf(q2 * 1000) / 1000.0;
+      data.q3 = roundf(q3 * 1000) / 1000.0;
+      data.roll = roundf(roll * 1000) / 1000.0;
+      data.pitch = roundf(pitch * 1000) / 1000.0;
+      data.heading = roundf(heading * 1000) / 1000.0;
+    }
 
     ++frame_count;
   }
@@ -417,6 +457,48 @@ void loop(void)
     {
       startCalibration();
     }
+  }
+
+  // Check if it's time to send the data
+  if (currentTime - lastSendTime >= sendInterval)
+  {
+    lastSendTime = currentTime;
+
+    // Prepare JSON array for sending
+    size_t jsonCapacity = sizeof(IMUData) * dataCount * 10;
+    DynamicJsonDocument doc(jsonCapacity);
+    JsonArray array = doc.to<JsonArray>();
+
+    for (int i = 0; i < dataCount; i++)
+    {
+      JsonObject obj = array.createNestedObject();
+      obj["timestamp"] = dataStorage[i].timestamp;
+      obj["ax"] = dataStorage[i].ax;
+      obj["ay"] = dataStorage[i].ay;
+      obj["az"] = dataStorage[i].az;
+      obj["gx"] = dataStorage[i].gx;
+      obj["gy"] = dataStorage[i].gy;
+      obj["gz"] = dataStorage[i].gz;
+      obj["mx"] = dataStorage[i].mx;
+      obj["my"] = dataStorage[i].my;
+      obj["mz"] = dataStorage[i].mz;
+      obj["q0"] = dataStorage[i].q0;
+      obj["q1"] = dataStorage[i].q1;
+      obj["q2"] = dataStorage[i].q2;
+      obj["q3"] = dataStorage[i].q3;
+      obj["roll"] = dataStorage[i].roll;
+      obj["pitch"] = dataStorage[i].pitch;
+      obj["heading"] = dataStorage[i].heading;
+      // Add other fields similarly
+    }
+
+    // Serialize JSON and send
+    char buffer[1024 * 5];
+    serializeJson(doc, buffer, sizeof(buffer));
+    events.send(buffer, "imu_data", millis());
+
+    // Reset data count for new data
+    dataCount = 0;
   }
 
   int32_t sec = millis() / 1000;

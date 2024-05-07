@@ -37,12 +37,12 @@ window.onload = () => {
 
         source.addEventListener('imu_data', function (e) {  // Listening for 'imu_data'
             // Parse the JSON data received from the server
-            // var data = e.data;
+            var data = e.data;
             // var data = JSON.parse(e.data);
 
             // imuData[16] = { ax, ay, az, gx, gy, gz, mx, my, mz, q0, q1, q2, q3, roll, pitch, heading }
 
-            processData(e.data);
+            // processData(e.data);
 
             // data is expected to be an array of objects
             // data.forEach(function (entry) {
