@@ -10,71 +10,13 @@
 }
 
 @font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-RegularItalic.otf") format("opentype");
-  font-weight: 400;
-  font-style: italic;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-Light.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-LightItalic.otf") format("opentype");
-  font-weight: 300;
-  font-style: italic;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-Medium.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-MediumItalic.otf") format("opentype");
-  font-weight: 500;
-  font-style: italic;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-Bold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-BoldItalic.otf") format("opentype");
-  font-weight: 700;
-  font-style: italic;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-ExtraBold.otf") format("opentype");
-  font-weight: 800;
-  font-style: normal;
-}
-@font-face {
-  font-family: "Creato";
-  src: url("assets/fonts/CreatoDisplay-ExtraBoldItalic.otf") format("opentype");
-  font-weight: 800;
-  font-style: italic;
-}
-@font-face {
   font-family: "Binoma";
   src: url("assets/fonts/BinomaTrial-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
 }
+
+/* @import url("https://fonts.cdnfonts.com/css/creato-display"); */
 
 html,
 body {
@@ -90,12 +32,13 @@ body {
   width: 100%;
   gap: auto;
   align-self: stretch;
+  /* font-family: "Creato Display", sans-serif; */
 }
 
 h3 {
   color: var(--brown);
   text-align: center;
-  font-family: "Creato Display";
+  font-family: "Creato Display", sans-serif;
   font-size: 20px;
   font-style: normal;
   font-weight: 800;
@@ -105,7 +48,7 @@ h3 {
 h4 {
   color: var(--brown);
   text-align: center;
-  font-family: "Creato Display";
+  font-family: "Creato Display", sans-serif;
   font-size: 20px;
   font-style: normal;
   font-weight: 300;
@@ -115,7 +58,7 @@ h4 {
 h6 {
   color: var(--brown);
   text-align: center;
-  font-family: "Creato Display";
+  font-family: "Creato Display", sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -125,7 +68,7 @@ h6 {
 .bottomNavText {
   color: var(--Lighter, #f3f0eb);
   text-align: center;
-  font-family: "Creato Display";
+  font-family: "Creato Display", sans-serif;
   font-size: 15px;
   font-style: normal;
   font-weight: 500;
@@ -145,7 +88,7 @@ h6 {
 #headerName {
   color: var(--orange);
   text-align: center;
-  font-family: "Binoma Trial";
+  font-family: "Binoma", sans-serif;
   font-size: 24px;
   font-style: normal;
   font-weight: 400;
